@@ -1,30 +1,7 @@
 import { DataTypes, Model } from 'sequelize';
-import db from '../config/database.js';
+import { sequelize } from '../config/database.js';
 
-
-class Restaurant extends Model {
-    static async seedIfEmpty() {
-        const count = await this.count();
-        if (count > 0) {
-            console.log("Restaurants table already has data");
-            return;
-        }
-        await this.bulkCreate([
-            {
-                name: "Pizza Palace",
-                description: "Best pizza in town",
-                cuisine_type: "Italian",
-                address: "123 Main St, New York",
-                latitude: 40.7128,
-                longitude: -74.0060,
-                rating: 4.5,
-                price_range: "$$",
-                phone: "+1-111-111-1111",
-                is_open: true,
-            },
-        ]);
-    }
-}
+class Restaurant extends Model {}
 
 Restaurant.init(
     {
@@ -34,47 +11,76 @@ Restaurant.init(
             autoIncrement: true,
         },
         name: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(255),
             allowNull: false,
+            validate: {
+                len: [3, 255]
+            },
         },
         description: {
             type: DataTypes.TEXT,
+            allowNull: false,
         },
-        cuisine_type: {
-            type: DataTypes.STRING,
+        cuisineType: {
+            type: DataTypes.STRING(100),
+            field: 'cuisine_type'
         },
         address: {
-            type: DataTypes.TEXT,
+            type: DataTypes.STRING(255),
             allowNull: false,
         },
         latitude: {
-            type: DataTypes.DECIMAL(),
+            type: DataTypes.DECIMAL(10, 8),
             allowNull: false,
+            validate: { min: -90, max: 90 },
         },
         longitude: {
-            type: DataTypes.DECIMAL(),
+            type: DataTypes.DECIMAL(11, 8),
+            allowNull: false,
+            validate: { min: -180, max: 180 },
+        },
+
+        location: {
+            type: DataTypes.GEOMETRY('POINT', 4326),
             allowNull: false,
         },
         rating: {
-            type: DataTypes.DECIMAL(),
+            type: DataTypes.DECIMAL(2, 1),
             defaultValue: 0,
+            validate: { min: 0, max: 5 },
         },
-        price_range: {
-            type: DataTypes.ENUM('$', '$$', '$$$', ''),
+        priceRange: {
+            type: DataTypes.ENUM('$', '$$', '$$$', '$$$$'),
+            defaultValue: '$$',
+            field: 'price_range'
         },
         phone: {
-            type: DataTypes.STRING,
+            type: DataTypes.STRING(20),
+            allowNull: false,
         },
-        is_open: {
+        isOpen: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
+            field: 'is_open'
         }
     },
     {
-        sequelize: db,
-        modelName: 'restaurant',
-        tableName: 'restaurant',
-        timestamps: true
+        sequelize,
+        modelName: 'Restaurant',
+        timestamps: true,
+        underscored: true,
+        tableName: 'restaurants',
+
+        hooks: {
+            beforeValidate: (instance) => {
+                if (instance.latitude && instance.longitude) {
+                    instance.location = {
+                        type: 'Point',
+                        coordinates: [parseFloat(instance.longitude), parseFloat(instance.latitude)],
+                    };
+                }
+            }
+        }
     }
 );
 

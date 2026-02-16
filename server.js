@@ -1,34 +1,46 @@
-import express from 'express';
 import dotenv from 'dotenv';
-import sequelize from './config/database.js';
-import restaurantRoutes from './routes/restaurantRoutes.js';
-import Restaurant from './models/Restaurant.js';
-
 dotenv.config();
+
+import express from 'express';
+import { sequelize, connectDB } from './config/database.js';
+
+
+import User from './models/Users.js';
+import Restaurant from './models/Restaurant.js';
+import Product from './models/Product.js';
+
+
+import authRoutes from './routes/authRotes.js';
+import restaurantRoutes from './routes/restaurantRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import errorHandler from './middleware/errorHandler.js';
+
 const app = express();
 
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use('/api/restaurants', restaurantRoutes);
-app.get('/', (req, res) => {
-    res.send('Restaurant Finder API is running...');
-});
 
-const PORT = 3000;
+app.use('/api/auth', authRoutes);
+app.use('/api/restaurants', restaurantRoutes);
+app.use('/api/restaurants/:restaurantId/products', productRoutes);
+
+app.use(errorHandler);
+
 
 const startServer = async () => {
     try {
-        await sequelize.authenticate();
+        await connectDB();
+
         await sequelize.sync({ alter: true });
-        await Restaurant.seedIfEmpty();
+        console.log('Database synced successfully.');
 
+
+        const PORT = process.env.PORT || 5000;
         app.listen(PORT, () => {
-            console.log(`Server is running: http://localhost:${PORT}`);
+            console.log(`Server is running on port ${PORT}`);
         });
-
     } catch (error) {
-        console.error('Server start error:', error);
+        console.error('Unable to start server:', error);
         process.exit(1);
     }
 };

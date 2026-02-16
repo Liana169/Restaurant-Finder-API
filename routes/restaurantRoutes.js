@@ -1,14 +1,19 @@
-import express from 'express'
-import {createRestaurant,getAllRestaurants,
-        getRestaurantById,findNearbyRestaurants,
-        updateRestaurant,   deleteRestaurant} from '../controllers/restaurantControllers.js';
+import { Router } from 'express';
+import {
+        createRestaurant,
+        getAllRestaurants,
+        getNearbyRestaurants,
+        getRestaurantById,
+        updateRestaurant,
+        deleteRestaurant
+} from '../controllers/restaurantControllers.js';
 
-const router = express.Router();
+const router = Router();
 
-router.get('/', createRestaurant);
-router.get('/',getAllRestaurants);
+router.post('/', createRestaurant);
+router.get('/', getAllRestaurants);
+router.get('/nearby', getNearbyRestaurants);
 router.get('/:id', getRestaurantById);
-router.get('/nearby', findNearbyRestaurants);
 router.put('/:id', updateRestaurant);
 router.delete('/:id', deleteRestaurant);
 

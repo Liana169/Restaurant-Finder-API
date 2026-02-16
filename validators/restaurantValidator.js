@@ -1,25 +1,45 @@
-import joi from 'joi';
+import Joi from 'joi';
 
-
-export const createRestaurantValidator = joi.object().keys({
-    name: joi.string().min(3).required(),
-    description: joi.string().optional(),
-    cuisine_type: joi.string().optional(),
-    address: joi.string().required(),
-    latitude: joi.number().min(-90).max(90).required(),
-    longitude: joi.number().min(-180).max(180).required(),
-    rating: joi.number().min(0).max(10).required(),
-    price_range: joi.string().valid("$", "$$", "$$$", "$$$$").optional(),
-    phone: joi.string().optional(),
-    is_open: joi.boolean().optional(),
+export const createRestaurantSchema = Joi.object({
+    name: Joi.string().min(3).max(255).required(),
+    description: Joi.string().optional(),
+    cuisineType: Joi.string().max(100).optional(),
+    address: Joi.string().required(),
+    latitude: Joi.number().min(-90).max(90).required(),
+    longitude: Joi.number().min(-180).max(180).required(),
+    rating: Joi.number().min(0).max(5).optional(),
+    priceRange: Joi.string().valid('$', '$$', '$$$', '$$$$').optional(),
+    phone: Joi.string().max(20).optional(),
+    isOpen: Joi.boolean().optional()
 });
 
-export const searchNearbyValidator = joi.object().keys({
-    latitude: joi.number().min(-90).max(90).required(),
-    longitude: joi.number().min(-180).max(180).required(),
-    radius: joi.number().max(50).default(5),
-    limit: joi.number().max(100).default(10),
-    cuisine_type: joi.string().optional(),
-    min_rating: joi.number().min(0).max(5).optional(),
 
-})
+export const updateRestaurantSchema = Joi.object({
+    name: Joi.string().min(3).max(255).optional(),
+    description: Joi.string().optional(),
+    cuisineType: Joi.string().max(100).optional(),
+    address: Joi.string().optional(),
+    latitude: Joi.number().min(-90).max(90).optional(),
+    longitude: Joi.number().min(-180).max(180).optional(),
+    rating: Joi.number().min(0).max(5).optional(),
+    priceRange: Joi.string().valid('$', '$$', '$$$', '$$$$').optional(),
+    phone: Joi.string().max(20).optional(),
+    isOpen: Joi.boolean().optional()
+});
+
+
+export const nearbyQuerySchema = Joi.object({
+    latitude: Joi.number().min(-90).max(90).required(),
+    longitude: Joi.number().min(-180).max(180).required(),
+    radius: Joi.number().min(1).max(50000).default(5000),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    cuisineType: Joi.string().optional(),
+    minRating: Joi.number().min(0).max(5).optional()
+});
+
+export const getAllQuerySchema = Joi.object({
+    page: Joi.number().integer().min(1).default(1),
+    limit: Joi.number().integer().min(1).max(100).default(10),
+    cuisineType: Joi.string().optional(),
+    priceRange: Joi.string().valid('$', '$$', '$$$', '$$$$').optional()
+});
