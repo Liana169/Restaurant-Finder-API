@@ -62,7 +62,13 @@ Restaurant.init(
             type: DataTypes.BOOLEAN,
             defaultValue: true,
             field: 'is_open'
-        }
+        },
+        coverImage: {
+            type: DataTypes.STRING(500),
+            allowNull: true,
+            defaultValue: null,
+            field: 'cover_image' ,
+        },
     },
     {
         sequelize,

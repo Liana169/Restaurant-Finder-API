@@ -1,20 +1,25 @@
 import jwt from 'jsonwebtoken';
+import fs from 'fs';
 import User from '../models/Users.js';
-import { registerSchema, loginSchema} from "../validators/authValidator.js";
+import {registerSchema, loginSchema} from "../validators/authValidator.js";
 
 
-export const register = async (req, res,next) => {
+export const register = async (req, res, next) => {
     try {
-        const {email, value} = registerSchema.validate(req.body, {abortEarly: false});
+        const {error, value} = registerSchema.validate(req.body, {abortEarly: false});
         if (error) return res.status(400).json({success: false, errors: error.details});
 
 
         const exitingUser = await User.findOne({where: {email: value.email}})
         if (exitingUser) {
             return res.status(409).json({success: false, error: 'Email already registered'});
-
         }
-        const user = await User.create(value)
+
+        const profilePicturePath = req.file ? req.file.path : null;
+        const user = await User.create({
+            ...value,
+            profilePicturePath: profilePicturePath,
+        })
         const token = jwt.sign({id: user.id, email: user.email},
             process.env.JWT_SECRET,
             {expiresIn: process.env.JWT_EXPIRES_IN}
@@ -23,13 +28,47 @@ export const register = async (req, res,next) => {
             success: true,
             message: 'User registered successfully',
             token,
-            data: {id: user.id, username: user.username, email: user.email},
+            data: {
+                id: user.id,
+                username: user.username,
+                email: user.email
+            },
         });
-    }catch(err){
+    } catch (err) {
         next(err);
     }
 };
-export const login = async (req, res,next) => {
+
+export const uploadProfilePicture = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({success: false, error: 'No file uploaded'});
+        }
+        const user = await Usr.findByPk(req.user.id);
+        if (!user) {
+            return res.status(404).json({success: false, error: 'No file uploaded'});
+        }
+        if (user.profilePicture) {
+            try {
+                fs.unlinkSync(user.profilePicture);
+            } catch (e) {
+                console.error('Could not delete old picture:', e.message);
+            }
+        }
+        user.profilePicture = req.file.path;
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Profile picture updated',
+            data: {profilePicture: user.profilePicture}
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+export const login = async (req, res, next) => {
     try {
         const {error, value} = loginSchema.validate(req.body);
         if (error) return res.status(400).json({success: false, error: error.message});
@@ -52,7 +91,12 @@ export const login = async (req, res,next) => {
             success: true,
             message: 'Login successful',
             token,
-            data: {id: user.id, username: user.username, email: user.email}
+            data: {
+                   id: user.id,
+                   username: user.username,
+                   email: user.email,
+                   profilePicture: user.profilePicture
+            }
         });
     } catch (err) {
         next(err);

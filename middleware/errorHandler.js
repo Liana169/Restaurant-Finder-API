@@ -1,5 +1,29 @@
+import multer from 'multer';
 const errorHandler = (err, req, res, next) => {
     console.error(err.stack);
+
+    if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+            success: false,
+            error: 'File too large',
+            message: 'Max allowed file size: 2MB for profile'
+        });
+    }
+
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({
+            success: false,
+            error: 'Unexpected file fiel',
+            message: 'Check the field name used in your request'
+        });
+    }
+
+    if(err.message === 'Only image files are allowed(jpeg, jpg, png, gif, webp)'){
+        return res.status(400).json({
+            success: false,
+            error: err.message,
+        });
+    }
 
     if (err.name === 'SequelizeValidationError') {
         return res.status(400).json({
@@ -30,6 +54,7 @@ const errorHandler = (err, req, res, next) => {
         error: statusCode === 500 ? 'Internal server error' : 'Error',
         message: err.message
     });
+
 };
 
 export default errorHandler;

@@ -42,7 +42,13 @@ Product.init({
         allowNull: false,
         defaultValue: true,
         field: 'is_available'
-    }
+    },
+    images: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: null,
+        field: 'images',
+    },
 }, {
     sequelize,
     tableName: 'products',

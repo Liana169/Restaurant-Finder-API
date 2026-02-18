@@ -1,4 +1,7 @@
 import dotenv from 'dotenv';
+import path from 'path';
+import {fileURLToPath} from 'url';
+
 dotenv.config();
 
 import express from 'express';
@@ -16,16 +19,18 @@ import productRoutes from './routes/productRoutes.js';
 import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
-
-
 app.use(express.json());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurants', restaurantRoutes);
 app.use('/api/restaurants/:restaurantId/products', productRoutes);
 
-app.use(errorHandler);
 
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const startServer = async () => {
     try {

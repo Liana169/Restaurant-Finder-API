@@ -37,6 +37,12 @@ User.init({
             len: [6, 255]
         },
     },
+    profilePicture: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+        defaultValue: null,
+        field: 'profile_picture'
+    },
 }, {
     sequelize,
     tableName: 'users',
